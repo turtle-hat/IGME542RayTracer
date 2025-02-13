@@ -44,7 +44,6 @@ private:
 	// Whether the camera moved last frame
 	bool wasInputDetectedLastFrame = false;
 
-	// 
 
 
 
@@ -53,6 +52,5 @@ private:
 
 	// Initialization helper functions
 	void InitializeParameters();
-	void FindColor(unsigned int _x, unsigned int _y, unsigned int _width, unsigned int _height);
 };
 
