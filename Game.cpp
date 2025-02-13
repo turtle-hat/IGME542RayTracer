@@ -89,7 +89,6 @@ void Game::InitializeParameters()
 
 }
 
-
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
 // --------------------------------------------------------
@@ -117,32 +116,29 @@ void Game::Update(float deltaTime, float totalTime)
 	unsigned int w = cpuTexture->GetWidth();
 	unsigned int h = cpuTexture->GetHeight();
 
-	// Optimize the following loop
 	float fWidth = (float)w;
 	float fHeight = (float)h;
 	float fSinTime = (float)sin(totalTime) * 0.5f + 0.5f;
 	
-	// If camera has detected, decrease resolution to allow for faster rendering
-	if (isInputDetected) {
-		for (unsigned int y = 0; y < h; y++)
+	unsigned int y = currentScanline;
+	// If camera has detected input, render full screen;
+	// If not, set the max row to be rendered this frame so
+	// only one scanline is rendered
+	unsigned int frameRenderHeight = isInputDetected ? h : y + 1;
+
+	while (y < frameRenderHeight)
+	{
+		for (unsigned int x = 0; x < w; x++)
 		{
-			for (unsigned int x = 0; x < w; x++)
-			{
-				cpuTexture->SetColor(x, y, XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1));
-			}
-		}
+			XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
 
-	} else {
-		if (currentScanline < h) {
-			for (unsigned int x = 0; x < w; x++)
-			{
-				cpuTexture->SetColor(x, currentScanline, XMFLOAT4(x / fWidth, currentScanline / fHeight, fSinTime, 1));
-			}
-
-			currentScanline++;
-			currentScanline %= h;
+			cpuTexture->SetColor(x, y, color);
 		}
+		y++;
 	}
+
+	currentScanline++;
+	currentScanline %= h;
 
 	wasInputDetectedLastFrame = isInputDetected;
 }

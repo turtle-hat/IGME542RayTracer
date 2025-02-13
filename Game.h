@@ -23,23 +23,36 @@ public:
 	void OnResize();
 
 private:
-	// CONSTANTS
+	// --- CONSTANTS ---
+
 	const float STATIONARY_TEXTURE_SCALE = 0.5f;
 	const float MOVING_TEXTURE_SCALE = 0.1f;
+
+
+
+	// --- VARIABLES ---
 
 	std::shared_ptr<FPSCamera> camera;
 
 	float textureScale;
 	std::shared_ptr<CPUTexture> cpuTexture;
 
-
-
 	// Rendering Variables
+
 	// Current row of pixels being rendered
 	unsigned int currentScanline;
+	// Whether the camera moved last frame
 	bool wasInputDetectedLastFrame = false;
+
+	// 
+
+
+
+
+	// FUNCTIONS
 
 	// Initialization helper functions
 	void InitializeParameters();
+	void FindColor(unsigned int _x, unsigned int _y, unsigned int _width, unsigned int _height);
 };
 
