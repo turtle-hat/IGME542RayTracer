@@ -23,10 +23,23 @@ public:
 	void OnResize();
 
 private:
+	// CONSTANTS
+	const float STATIONARY_TEXTURE_SCALE = 0.5f;
+	const float MOVING_TEXTURE_SCALE = 0.1f;
 
 	std::shared_ptr<FPSCamera> camera;
 
 	float textureScale;
 	std::shared_ptr<CPUTexture> cpuTexture;
+
+
+
+	// Rendering Variables
+	// Current row of pixels being rendered
+	unsigned int currentScanline;
+	bool wasInputDetectedLastFrame = false;
+
+	// Initialization helper functions
+	void InitializeParameters();
 };
 

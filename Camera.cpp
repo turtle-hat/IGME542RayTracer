@@ -151,6 +151,8 @@ void FPSCamera::SetMouseLookSpeed(float speed) { mouseLookSpeed = speed; }
 
 bool FPSCamera::Update(float dt)
 {
+	// Flag, set to true if any input detected
+	bool isInputDetected = false;
 	// Current speed
 	float speed = dt * movementSpeed;
 
@@ -159,12 +161,30 @@ bool FPSCamera::Update(float dt)
 	if (Input::KeyDown(VK_CONTROL)) { speed *= 0.1f; }
 
 	// Movement
-	if (Input::KeyDown('W')) { transform->MoveRelative(0, 0, speed); }
-	if (Input::KeyDown('S')) { transform->MoveRelative(0, 0, -speed); }
-	if (Input::KeyDown('A')) { transform->MoveRelative(-speed, 0, 0); }
-	if (Input::KeyDown('D')) { transform->MoveRelative(speed, 0, 0); }
-	if (Input::KeyDown('X')) { transform->MoveAbsolute(0, -speed, 0); }
-	if (Input::KeyDown(' ')) { transform->MoveAbsolute(0, speed, 0); }
+	if (Input::KeyDown('W')) {
+		transform->MoveRelative(0, 0, speed);
+		isInputDetected = true;
+	}
+	if (Input::KeyDown('S')) { 
+		transform->MoveRelative(0, 0, -speed);
+		isInputDetected = true;
+	}
+	if (Input::KeyDown('A')) { 
+		transform->MoveRelative(-speed, 0, 0);
+		isInputDetected = true;
+	}
+	if (Input::KeyDown('D')) { 
+		transform->MoveRelative(speed, 0, 0);
+		isInputDetected = true;
+	}
+	if (Input::KeyDown('X')) { 
+		transform->MoveAbsolute(0, -speed, 0);
+		isInputDetected = true;
+	}
+	if (Input::KeyDown(' ')) { 
+		transform->MoveAbsolute(0, speed, 0);
+		isInputDetected = true;
+	}
 
 	// Handle mouse movement only when button is down
 	if (Input::MouseLeftDown())
@@ -179,8 +199,12 @@ bool FPSCamera::Update(float dt)
 		if (rot.x > XM_PIDIV2) rot.x = XM_PIDIV2;
 		if (rot.x < -XM_PIDIV2) rot.x = -XM_PIDIV2;
 		transform->SetRotation(rot);
+
+		isInputDetected = true;
 	}
 
 	// Use base class's update (handles view matrix)
 	Camera::Update(dt);
+
+	return isInputDetected;
 }

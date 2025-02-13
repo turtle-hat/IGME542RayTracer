@@ -49,6 +49,11 @@ void Game::Initialize()
 	{
 		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
+
+	currentScanline = 0;
+
+	// Initialize scene parameters
+	InitializeParameters();
 }
 
 
@@ -79,6 +84,11 @@ void Game::OnResize()
 		camera->UpdateProjectionMatrix(Window::AspectRatio());
 }
 
+void Game::InitializeParameters()
+{
+
+}
+
 
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
@@ -89,7 +99,19 @@ void Game::Update(float deltaTime, float totalTime)
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
 
-	camera->Update(deltaTime);
+	// Check for input and move Camera if needed
+	bool isInputDetected = camera->Update(deltaTime);
+
+	// Resize the texture if it would've been a different size last frame
+	if (isInputDetected != wasInputDetectedLastFrame) {
+		// Pick correct texture scale
+		textureScale = isInputDetected ? MOVING_TEXTURE_SCALE : STATIONARY_TEXTURE_SCALE;
+		cpuTexture->Resize(
+			(unsigned int)(Window::Width() * textureScale),
+			(unsigned int)(Window::Height() * textureScale));
+		// Reset scanline
+		currentScanline = 0;
+	}
 
 	// Change the color of the texture
 	unsigned int w = cpuTexture->GetWidth();
@@ -99,15 +121,30 @@ void Game::Update(float deltaTime, float totalTime)
 	float fWidth = (float)w;
 	float fHeight = (float)h;
 	float fSinTime = (float)sin(totalTime) * 0.5f + 0.5f;
-
-	for (unsigned int y = 0; y < h; y++)
-	{
-		for (unsigned int x = 0; x < w; x++)
+	
+	// If camera has detected, decrease resolution to allow for faster rendering
+	if (isInputDetected) {
+		for (unsigned int y = 0; y < h; y++)
 		{
-			cpuTexture->SetColor(x, y, XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1));
+			for (unsigned int x = 0; x < w; x++)
+			{
+				cpuTexture->SetColor(x, y, XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1));
+			}
+		}
+
+	} else {
+		if (currentScanline < h) {
+			for (unsigned int x = 0; x < w; x++)
+			{
+				cpuTexture->SetColor(x, currentScanline, XMFLOAT4(x / fWidth, currentScanline / fHeight, fSinTime, 1));
+			}
+
+			currentScanline++;
+			currentScanline %= h;
 		}
 	}
 
+	wasInputDetectedLastFrame = isInputDetected;
 }
 
 
