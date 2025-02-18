@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "Graphics.h"
-#include "Vertex.h"
 #include "Input.h"
 #include "PathHelpers.h"
 #include "Window.h"
@@ -10,6 +9,8 @@
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
+
+#include "Vertex.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -52,8 +53,11 @@ void Game::Initialize()
 
 	currentScanline = 0;
 
+
+
 	// Initialize scene parameters
 	InitializeParameters();
+	UpdateViewportData();
 }
 
 
@@ -76,17 +80,97 @@ Game::~Game()
 void Game::OnResize()
 {
 	if (cpuTexture)
+	{
 		cpuTexture->Resize(
 			(unsigned int)(Window::Width() * textureScale),
 			(unsigned int)(Window::Height() * textureScale));
+		viewportSize = XMFLOAT2(2.0f, 2.0f * Window::AspectRatio());
+		viewportPixelPercentage = XMFLOAT2(
+			(1.0f / (Window::Width() * textureScale)),
+			(1.0f / (Window::Height() * textureScale))
+		);
+	}
 
 	if (camera)
+	{
 		camera->UpdateProjectionMatrix(Window::AspectRatio());
+		UpdateViewportData();
+	}
 }
 
 void Game::InitializeParameters()
 {
 
+}
+
+void Game::UpdateViewportData()
+{
+	// Get viewport's U and V vectors, scaling them to our viewport's size
+	std::shared_ptr<Transform> cameraTransform = camera->GetTransform();
+	XMStoreFloat3(&viewportU, XMVectorScale(
+		XMLoadFloat3(&cameraTransform->GetRight()),
+		viewportSize.x)
+	);
+	XMStoreFloat3(&viewportV, XMVectorScale(
+		XMVectorScale(XMLoadFloat3(&cameraTransform->GetUp()), -1.0f), // Scale by -1 to invert V
+		viewportSize.y)
+	);
+
+	// Find change in U and V between pixels
+	XMStoreFloat3(&pixelDeltaU, XMVectorScale(
+		XMLoadFloat3(&viewportU),
+		viewportPixelPercentage.x)
+	);
+	XMStoreFloat3(&pixelDeltaV, XMVectorScale(
+		XMLoadFloat3(&viewportV),
+		viewportPixelPercentage.y)
+	);
+
+	// Find world position of the top-left of the viewport
+	XMStoreFloat3(&upperLeftViewportLocation,
+		XMLoadFloat3(&cameraTransform->GetPosition()) -
+		XMVectorScale(
+			XMLoadFloat3(&cameraTransform->GetForward()),
+			camera->GetNearClip()
+		) -
+		XMVectorScale(XMLoadFloat3(&viewportU), 0.5f) -
+		XMVectorScale(XMLoadFloat3(&viewportV), 0.5f)
+	);
+
+	// Find world position of the center of the top-left pixel
+	XMStoreFloat3(&upperLeftPixelCenter,
+		XMLoadFloat3(&upperLeftViewportLocation) +
+		XMVectorScale(
+			XMLoadFloat3(&pixelDeltaU) + XMLoadFloat3(&pixelDeltaV),
+			0.5f
+		)
+	);
+}
+
+DirectX::XMFLOAT3 Game::RayColor(Ray _ray)
+{
+	XMFLOAT3 outColor;
+
+	// Unpack XMFLOAT3s
+	XMVECTOR vecRayOrigin = XMLoadFloat3(&_ray.Origin);
+	XMVECTOR vecRayDirection = XMLoadFloat3(&_ray.Direction);
+
+	// Normalize ray's direction and store
+	XMVECTOR vecUnitDirection = XMVector3Normalize(vecRayDirection);
+
+	XMFLOAT3 unitDirection;
+	XMStoreFloat3(&unitDirection, vecUnitDirection);
+
+	// Find y component of ray
+	float a = 0.5f * (unitDirection.y + 1.0f);
+	
+	XMFLOAT3 color1(1.0f, 1.0f, 1.0f);
+	XMFLOAT3 color2(0.5f, 0.7f, 1.0f);
+
+	// Calculate interpolated color
+	XMStoreFloat3(&outColor, XMVectorLerp(XMLoadFloat3(&color1), XMLoadFloat3(&color2), a));
+
+	return outColor;
 }
 
 // --------------------------------------------------------
@@ -108,9 +192,16 @@ void Game::Update(float deltaTime, float totalTime)
 		cpuTexture->Resize(
 			(unsigned int)(Window::Width() * textureScale),
 			(unsigned int)(Window::Height() * textureScale));
+		viewportPixelPercentage = XMFLOAT2(
+			(1.0f / (Window::Width() * textureScale)),
+			(1.0f / (Window::Height() * textureScale))
+		);
 		// Reset scanline
 		currentScanline = 0;
+		UpdateViewportData();
 	}
+
+	
 
 	// Change the color of the texture
 	unsigned int w = cpuTexture->GetWidth();
@@ -126,10 +217,30 @@ void Game::Update(float deltaTime, float totalTime)
 	// only one scanline is rendered
 	unsigned int frameRenderHeight = isInputDetected ? h : y + 1;
 
+	// Get relevant information
+	XMVECTOR vecPixelDeltaU = XMLoadFloat3(&pixelDeltaU);
+	XMVECTOR vecPixelDeltaV = XMLoadFloat3(&pixelDeltaV);
+	std::shared_ptr<Transform> cameraTransform = camera->GetTransform();
+	XMFLOAT3 cameraPosition = cameraTransform->GetPosition();
+	XMVECTOR vecCameraPosition = XMLoadFloat3(&cameraPosition);
+
 	while (y < frameRenderHeight)
 	{
 		for (unsigned int x = 0; x < w; x++)
 		{
+			// Create ray
+			Ray ray = {};
+			ray.Origin = cameraPosition;
+
+			// Find center of this pixel
+			XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
+				XMVectorScale(vecPixelDeltaU, x) +
+				XMVectorScale(vecPixelDeltaV, y);
+
+			// Get the direction of the ray through the center of this pixel
+			XMVECTOR vecRayDirection = pixelCenter - vecCameraPosition;
+			XMStoreFloat3(&ray.Direction, vecRayDirection);
+
 			XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
 
 			cpuTexture->SetColor(x, y, color);
