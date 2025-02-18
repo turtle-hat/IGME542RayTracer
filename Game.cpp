@@ -107,12 +107,17 @@ void Game::UpdateViewportData()
 {
 	// Get viewport's U and V vectors, scaling them to our viewport's size
 	std::shared_ptr<Transform> cameraTransform = camera->GetTransform();
+	XMFLOAT3 cameraPosition = cameraTransform->GetPosition();
+	XMFLOAT3 cameraForward = cameraTransform->GetForward();
+	XMFLOAT3 cameraRight = cameraTransform->GetRight();
+	XMFLOAT3 cameraUp = cameraTransform->GetUp();
+	
 	XMStoreFloat3(&viewportU, XMVectorScale(
-		XMLoadFloat3(&cameraTransform->GetRight()),
+		XMLoadFloat3(&cameraRight),
 		viewportSize.x)
 	);
 	XMStoreFloat3(&viewportV, XMVectorScale(
-		XMVectorScale(XMLoadFloat3(&cameraTransform->GetUp()), -1.0f), // Scale by -1 to invert V
+		XMVectorScale(XMLoadFloat3(&cameraUp), -1.0f), // Scale by -1 to invert V
 		viewportSize.y)
 	);
 
@@ -128,9 +133,9 @@ void Game::UpdateViewportData()
 
 	// Find world position of the top-left of the viewport
 	XMStoreFloat3(&upperLeftViewportLocation,
-		XMLoadFloat3(&cameraTransform->GetPosition()) -
+		XMLoadFloat3(&cameraPosition) -
 		XMVectorScale(
-			XMLoadFloat3(&cameraTransform->GetForward()),
+			XMLoadFloat3(&cameraForward),
 			camera->GetNearClip()
 		) -
 		XMVectorScale(XMLoadFloat3(&viewportU), 0.5f) -
@@ -147,9 +152,9 @@ void Game::UpdateViewportData()
 	);
 }
 
-DirectX::XMFLOAT3 Game::RayColor(Ray _ray)
+DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
 {
-	XMFLOAT3 outColor;
+	XMFLOAT4 outColor;
 
 	// Unpack XMFLOAT3s
 	XMVECTOR vecRayOrigin = XMLoadFloat3(&_ray.Origin);
@@ -164,11 +169,11 @@ DirectX::XMFLOAT3 Game::RayColor(Ray _ray)
 	// Find y component of ray
 	float a = 0.5f * (unitDirection.y + 1.0f);
 	
-	XMFLOAT3 color1(1.0f, 1.0f, 1.0f);
-	XMFLOAT3 color2(0.5f, 0.7f, 1.0f);
+	XMFLOAT4 color1(1.0f, 1.0f, 1.0f, 1.0f);
+	XMFLOAT4 color2(0.5f, 0.7f, 1.0f, 1.0f);
 
 	// Calculate interpolated color
-	XMStoreFloat3(&outColor, XMVectorLerp(XMLoadFloat3(&color1), XMLoadFloat3(&color2), a));
+	XMStoreFloat4(&outColor, XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a));
 
 	return outColor;
 }
@@ -198,6 +203,10 @@ void Game::Update(float deltaTime, float totalTime)
 		);
 		// Reset scanline
 		currentScanline = 0;
+		UpdateViewportData();
+	}
+	// If it hasn't already been, update viewport data with movement
+	else if (isInputDetected) {
 		UpdateViewportData();
 	}
 
@@ -234,14 +243,15 @@ void Game::Update(float deltaTime, float totalTime)
 
 			// Find center of this pixel
 			XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
-				XMVectorScale(vecPixelDeltaU, x) +
-				XMVectorScale(vecPixelDeltaV, y);
+				XMVectorScale(vecPixelDeltaU, (float)x) +
+				XMVectorScale(vecPixelDeltaV, (float)y);
 
 			// Get the direction of the ray through the center of this pixel
 			XMVECTOR vecRayDirection = pixelCenter - vecCameraPosition;
 			XMStoreFloat3(&ray.Direction, vecRayDirection);
 
-			XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
+			//XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
+			XMFLOAT4 color = RayColor(ray);
 
 			cpuTexture->SetColor(x, y, color);
 		}

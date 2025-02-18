@@ -86,6 +86,6 @@ private:
 	// Drawing helper functions
 
 	// Find the color returned by a given ray
-	DirectX::XMFLOAT3 RayColor(Ray _ray);
+	DirectX::XMFLOAT4 RayColor(Ray _ray);
 };
 
