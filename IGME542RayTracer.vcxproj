@@ -162,6 +162,7 @@
     <ClCompile Include="Hittable.cpp" />
     <ClCompile Include="HittableList.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Interval.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PathHelpers.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Hittable.h" />
     <ClInclude Include="HittableList.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Interval.h" />
     <ClInclude Include="PathHelpers.h" />
     <ClInclude Include="RayTracingStructs.h" />
     <ClInclude Include="Sphere.h" />

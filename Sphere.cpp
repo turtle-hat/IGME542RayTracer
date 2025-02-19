@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-bool Sphere::Hit(const Ray& _ray, float _rayTMin, float _rayTMax, HitRecord& _record) const
+bool Sphere::Hit(const Ray& _ray, Interval _rayT, HitRecord& _record) const
 {
 	// Load relevant data
 	XMVECTOR vecSphereOri = XMLoadFloat3(&origin);
@@ -28,9 +28,9 @@ bool Sphere::Hit(const Ray& _ray, float _rayTMin, float _rayTMax, HitRecord& _re
 
 	// Find nearest root of the equation in an acceptable range
 	float root = (h - sqrtd) / a;
-	if (root <= _rayTMin || _rayTMax <= root) {
+	if (!_rayT.Surrounds(root)) {
 		root = (h + sqrtd) / a;
-		if (root <= _rayTMin || _rayTMax <= root) {
+		if (!_rayT.Surrounds(root)) {
 			return false;
 		}
 	}

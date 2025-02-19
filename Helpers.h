@@ -3,7 +3,6 @@
 #include <cmath>
 #include <limits>
 #include <memory>
-#include <DirectXMath.h>
 
 
 
@@ -24,4 +23,6 @@ inline float DegreesToRadians(float degrees) {
 
 // Common Headers
 
+#include <DirectXMath.h>
 #include "RayTracingStructs.h"
+#include "Interval.h"

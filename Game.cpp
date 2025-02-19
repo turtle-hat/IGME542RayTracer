@@ -169,7 +169,7 @@ DirectX::XMFLOAT4 Game::RayColor(const Ray& _ray, const Hittable& _world)
 	// Test for world collision
 	HitRecord record;
 
-	if (_world.Hit(_ray, 0, infinity, record)) {
+	if (_world.Hit(_ray, Interval(0, infinity), record)) {
 		// Calculate color
 		XMFLOAT3 color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 		XMStoreFloat3(&color,
