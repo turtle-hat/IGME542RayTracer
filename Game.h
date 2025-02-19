@@ -3,10 +3,11 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <memory>
+#include <vector>
 
 #include "CPUTexture.h"
 #include "Camera.h"
-#include "Ray.h"
+#include "RayTracingStructs.h"
 
 class Game
 {
@@ -57,6 +58,9 @@ private:
 	DirectX::XMFLOAT3 upperLeftViewportLocation;
 	// World position of the center of upper-leftmost pixel of the viewport
 	DirectX::XMFLOAT3 upperLeftPixelCenter;
+
+	// Scene Variables
+	std::vector<Sphere> spheres;
 
 
 

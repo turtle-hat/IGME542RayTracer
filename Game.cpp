@@ -11,6 +11,7 @@
 #include <d3dcompiler.h>
 
 #include "Vertex.h"
+#include "Helpers.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -34,6 +35,11 @@ void Game::Initialize()
 		(unsigned int)(Window::Height() * textureScale),
 		Graphics::Device,
 		Graphics::Context);
+	viewportSize = XMFLOAT2(2.0f * Window::AspectRatio(), 2.0f);
+	viewportPixelPercentage = XMFLOAT2(
+		(1.0f / (Window::Width() * textureScale)),
+		(1.0f / (Window::Height() * textureScale))
+	);
 
 	// Create the camera
 	camera = std::make_shared<FPSCamera>(
@@ -42,7 +48,7 @@ void Game::Initialize()
 		0.002f,						// Look speed
 		XM_PIDIV4,					// Field of view
 		Window::AspectRatio(),		// Aspect ratio
-		0.01f,						// Near clip
+		1.0f,						// Near clip
 		100.0f,						// Far clip
 		CameraProjectionType::Perspective);
 
@@ -79,12 +85,14 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::OnResize()
 {
+	currentScanline = 0;
+
 	if (cpuTexture)
 	{
 		cpuTexture->Resize(
 			(unsigned int)(Window::Width() * textureScale),
 			(unsigned int)(Window::Height() * textureScale));
-		viewportSize = XMFLOAT2(2.0f, 2.0f * Window::AspectRatio());
+		viewportSize = XMFLOAT2(2.0f * Window::AspectRatio(), 2.0f);
 		viewportPixelPercentage = XMFLOAT2(
 			(1.0f / (Window::Width() * textureScale)),
 			(1.0f / (Window::Height() * textureScale))
@@ -100,7 +108,7 @@ void Game::OnResize()
 
 void Game::InitializeParameters()
 {
-
+	spheres.push_back({XMFLOAT3(0.0f, 0.0f, -1.0f), 0.5f});
 }
 
 void Game::UpdateViewportData()
@@ -133,7 +141,7 @@ void Game::UpdateViewportData()
 
 	// Find world position of the top-left of the viewport
 	XMStoreFloat3(&upperLeftViewportLocation,
-		XMLoadFloat3(&cameraPosition) -
+		XMLoadFloat3(&cameraPosition) +
 		XMVectorScale(
 			XMLoadFloat3(&cameraForward),
 			camera->GetNearClip()
@@ -156,6 +164,13 @@ DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
 {
 	XMFLOAT4 outColor;
 
+	// Test for sphere collision
+	for (int i = 0; i < spheres.size(); i++) {
+		if (Helpers::HitSphere(spheres[i], _ray)) {
+			return XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		}
+	}
+
 	// Unpack XMFLOAT3s
 	XMVECTOR vecRayOrigin = XMLoadFloat3(&_ray.Origin);
 	XMVECTOR vecRayDirection = XMLoadFloat3(&_ray.Direction);
@@ -168,11 +183,14 @@ DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
 
 	// Find y component of ray
 	float a = 0.5f * (unitDirection.y + 1.0f);
-	
-	XMFLOAT4 color1(1.0f, 1.0f, 1.0f, 1.0f);
-	XMFLOAT4 color2(0.5f, 0.7f, 1.0f, 1.0f);
+
+	XMFLOAT4 color1(0.5f, 0.7f, 1.0f, 1.0f);
+	XMFLOAT4 color2(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Calculate interpolated color
+	/*if (abs(a) < 0.1f) {
+		return XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+	}*/
 	XMStoreFloat4(&outColor, XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a));
 
 	return outColor;
@@ -258,8 +276,10 @@ void Game::Update(float deltaTime, float totalTime)
 		y++;
 	}
 
-	currentScanline++;
-	currentScanline %= h;
+	if (!isInputDetected) {
+		currentScanline++;
+		currentScanline %= h;
+	}
 
 	wasInputDetectedLastFrame = isInputDetected;
 }
