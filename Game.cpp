@@ -4,14 +4,15 @@
 #include "PathHelpers.h"
 #include "Window.h"
 
-#include <DirectXMath.h>
-
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
 
-#include "Vertex.h"
 #include "Helpers.h"
+#include "Vertex.h"
+#include "Hittable.h"
+#include "HittableList.h"
+#include "Sphere.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -160,30 +161,21 @@ void Game::UpdateViewportData()
 	);
 }
 
-DirectX::XMFLOAT4 Game::RayColor(const Ray& _ray)
+DirectX::XMFLOAT4 Game::RayColor(const Ray& _ray, const Hittable& _world)
 {
 	XMFLOAT4 outColor;
 
-	// Test for sphere collision
-	
-	for (int i = 0; i < spheres.size(); i++) {
-		float hitSphere = Helpers::HitSphere(spheres[i], _ray);
+	// Test for world collision
+	HitRecord record;
 
-		// If any sphere hit, get its normal and return color based on that
-		if (hitSphere > 0.0f) {
-			XMVECTOR normal = XMVector3Normalize(
-				// _ray.At(hitSphere) - (0, 0, 1)
-				_ray.At(hitSphere) - XMVectorSetZ(XMVectorZero(), 1)
-			);
+	if (_world.Hit(_ray, 0, infinity, record)) {
+		// Calculate color
+		XMFLOAT3 color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		XMStoreFloat3(&color,
+			XMVectorScale(XMLoadFloat3(&record.normal) + XMLoadFloat3(&color), 0.5f)
+		);
 
-			// Calculate color
-			XMFLOAT3 color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-			XMStoreFloat3(&color,
-				XMVectorScale(normal + XMLoadFloat3(&color), 0.5f)
-			);
-
-			return XMFLOAT4(color.x, color.y, color.z, 1.0f);
-		}
+		return XMFLOAT4(color.x, color.y, color.z, 1.0f);
 	}
 
 	// Sky color

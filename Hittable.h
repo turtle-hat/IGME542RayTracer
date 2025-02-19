@@ -1,6 +1,5 @@
 #pragma once
-#include <DirectXMath.h>
-#include "RayTracingStructs.h"
+#include "Helpers.h"
 
 class HitRecord {
 public:

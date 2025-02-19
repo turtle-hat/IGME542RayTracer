@@ -91,6 +91,6 @@ private:
 	// Drawing helper functions
 
 	// Find the color returned by a given ray
-	DirectX::XMFLOAT4 RayColor(const Ray& _ray);
+	DirectX::XMFLOAT4 RayColor(const Ray& _ray, const Hittable& _world);
 };
 

@@ -1,8 +1,6 @@
 #pragma once
 #include "Hittable.h"
 
-#include <DirectXMath.h>
-
 class Sphere :
     public Hittable
 {
