@@ -22,7 +22,7 @@ bool HittableList::Hit(const Ray& _ray, float _rayTMin, float _rayTMax, HitRecor
 	float closestSoFar = _rayTMax;
 
 	for (const auto& object : objects) {
-		if (object->Hit(_ray, _rayTMin, _rayTMax, temporaryRecord)) {
+		if (object->Hit(_ray, _rayTMin, closestSoFar, temporaryRecord)) {
 			hasHitAnything = true;
 			closestSoFar = temporaryRecord.t;
 			_record = temporaryRecord;

@@ -109,7 +109,8 @@ void Game::OnResize()
 
 void Game::InitializeParameters()
 {
-	spheres.push_back(std::make_shared<Sphere>(XMFLOAT3(0.0f, 0.0f, 1.0f), 0.5f));
+	world.Add(make_shared<Sphere>(XMFLOAT3(0.0f, 0.0f, 1.0f), 0.5f));
+	world.Add(make_shared<Sphere>(XMFLOAT3(0.0f, -100.5f, 1.0f), 100.0f));
 }
 
 void Game::UpdateViewportData()
@@ -275,7 +276,7 @@ void Game::Update(float deltaTime, float totalTime)
 			XMStoreFloat3(&ray.Direction, vecRayDirection);
 
 			//XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
-			XMFLOAT4 color = RayColor(ray);
+			XMFLOAT4 color = RayColor(ray, world);
 
 			cpuTexture->SetColor(x, y, color);
 		}

@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "RayTracingStructs.h"
 #include "Sphere.h"
+#include "HittableList.h"
 
 class Game
 {
@@ -61,7 +62,7 @@ private:
 	DirectX::XMFLOAT3 upperLeftPixelCenter;
 
 	// Scene Variables
-	std::vector<std::shared_ptr<Hittable>> hittables;
+	HittableList world;
 
 
 
