@@ -13,17 +13,16 @@ float Helpers::HitSphere(Sphere _sphere, Ray _ray)
 	XMVECTOR rayToSphere = vecSphereOri - vecRayOri;
 
 	// Calculate ray-sphere intersection
-	float a, b, c;
+	float a, h, c;
 
-	XMStoreFloat(&a, XMVector3Dot(vecRayDir, vecRayDir));
-	XMStoreFloat(&b, XMVector3Dot(vecRayDir, rayToSphere));
-	b *= -2.0f;
-	XMStoreFloat(&c, XMVector3Dot(rayToSphere, rayToSphere));
+	XMStoreFloat(&a, XMVector3LengthSq(vecRayDir));
+	XMStoreFloat(&h, XMVector3Dot(vecRayDir, rayToSphere));
+	XMStoreFloat(&c, XMVector3LengthSq(rayToSphere));
 	c -= _sphere.Radius * _sphere.Radius;
 
-	float discriminant = (b * b) - (4 * a * c);
+	float discriminant = (h * h) - (a * c);
 
 	return discriminant < 0 ? 
 		-1.0f :
-		(-b - sqrt(discriminant)) / (2.0f * a);
+		(h - sqrt(discriminant)) / a;
 }
