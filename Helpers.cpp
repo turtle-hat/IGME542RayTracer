@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-float Helpers::HitSphere(Sphere _sphere, Ray _ray)
+float Helpers::HitSphere(const Sphere& _sphere, const Ray& _ray)
 {
 	// Load relevant data
 	XMVECTOR vecSphereOri = XMLoadFloat3(&_sphere.Origin);

@@ -108,7 +108,7 @@ void Game::OnResize()
 
 void Game::InitializeParameters()
 {
-	spheres.push_back({XMFLOAT3(0.0f, 0.0f, 1.0f), 0.5f});
+	spheres.push_back(std::make_shared<Sphere>(XMFLOAT3(0.0f, 0.0f, 1.0f), 0.5f));
 }
 
 void Game::UpdateViewportData()
@@ -160,7 +160,7 @@ void Game::UpdateViewportData()
 	);
 }
 
-DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
+DirectX::XMFLOAT4 Game::RayColor(const Ray& _ray)
 {
 	XMFLOAT4 outColor;
 

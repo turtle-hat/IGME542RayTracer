@@ -159,10 +159,13 @@
     <ClCompile Include="CPUTexture.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="Hittable.cpp" />
+    <ClCompile Include="HittableList.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PathHelpers.cpp" />
-    <ClCompile Include="RayTracingHelpers.cpp" />
+    <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -171,10 +174,13 @@
     <ClInclude Include="CPUTexture.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Hittable.h" />
+    <ClInclude Include="HittableList.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="PathHelpers.h" />
     <ClInclude Include="RayTracingStructs.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="Sphere.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Window.h" />

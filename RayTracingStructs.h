@@ -13,8 +13,3 @@ struct Ray {
 		);
 	}
 };
-
-struct Sphere {
-	DirectX::XMFLOAT3 Origin;
-	float Radius;
-};

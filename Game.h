@@ -8,6 +8,7 @@
 #include "CPUTexture.h"
 #include "Camera.h"
 #include "RayTracingStructs.h"
+#include "Sphere.h"
 
 class Game
 {
@@ -60,7 +61,7 @@ private:
 	DirectX::XMFLOAT3 upperLeftPixelCenter;
 
 	// Scene Variables
-	std::vector<Sphere> spheres;
+	std::vector<std::shared_ptr<Hittable>> hittables;
 
 
 
@@ -90,6 +91,6 @@ private:
 	// Drawing helper functions
 
 	// Find the color returned by a given ray
-	DirectX::XMFLOAT4 RayColor(Ray _ray);
+	DirectX::XMFLOAT4 RayColor(const Ray& _ray);
 };
 
