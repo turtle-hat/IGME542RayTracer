@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-bool Helpers::HitSphere(Sphere _sphere, Ray _ray)
+float Helpers::HitSphere(Sphere _sphere, Ray _ray)
 {
 	// Load relevant data
 	XMVECTOR vecSphereOri = XMLoadFloat3(&_sphere.Origin);
@@ -23,5 +23,7 @@ bool Helpers::HitSphere(Sphere _sphere, Ray _ray)
 
 	float discriminant = (b * b) - (4 * a * c);
 
-	return discriminant >= 0;
+	return discriminant < 0 ? 
+		-1.0f :
+		(-b - sqrt(discriminant)) / (2.0f * a);
 }

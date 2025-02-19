@@ -76,14 +76,14 @@ void CPUTexture::Resize(unsigned int width, unsigned int height)
 	D3D11_TEXTURE2D_DESC copyDesc = {};
 	copyDesc.ArraySize = 1;
 	copyDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	copyDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	copyDesc.CPUAccessFlags = 0;
 	copyDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // Need to be able to copy to GPU quickly, so this must match our CPU data type
 	copyDesc.Height = height;
 	copyDesc.MipLevels = 1;
 	copyDesc.MiscFlags = 0;
 	copyDesc.SampleDesc.Count = 1;
 	copyDesc.SampleDesc.Quality = 0;
-	copyDesc.Usage = D3D11_USAGE_DYNAMIC;
+	copyDesc.Usage = D3D11_USAGE_DEFAULT;
 	copyDesc.Width = width;
 	device->CreateTexture2D(&copyDesc, 0, copyTexture.GetAddressOf());
 
@@ -103,9 +103,17 @@ void CPUTexture::Draw()
 {
 	// Copy the pixels to the actual texture
 	D3D11_MAPPED_SUBRESOURCE map = {};
-	context->Map(copyTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+	/*context->Map(copyTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
 	memcpy(map.pData, pixelColors, sizeof(XMFLOAT4) * width * height);
-	context->Unmap(copyTexture.Get(), 0);
+	context->Unmap(copyTexture.Get(), 0);*/
+	context->UpdateSubresource(
+		copyTexture.Get(),
+		0,
+		0,
+		pixelColors,
+		width * sizeof(XMFLOAT4),
+		1
+	);
 
 	// Perform a quick render to copy from our float texture to the back buffer
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

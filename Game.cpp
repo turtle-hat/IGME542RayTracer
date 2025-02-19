@@ -108,7 +108,7 @@ void Game::OnResize()
 
 void Game::InitializeParameters()
 {
-	spheres.push_back({XMFLOAT3(0.0f, 0.0f, -1.0f), 0.5f});
+	spheres.push_back({XMFLOAT3(0.0f, 0.0f, 1.0f), 0.5f});
 }
 
 void Game::UpdateViewportData()
@@ -165,11 +165,28 @@ DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
 	XMFLOAT4 outColor;
 
 	// Test for sphere collision
+	
 	for (int i = 0; i < spheres.size(); i++) {
-		if (Helpers::HitSphere(spheres[i], _ray)) {
-			return XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		float hitSphere = Helpers::HitSphere(spheres[i], _ray);
+
+		// If any sphere hit, get its normal and return color based on that
+		if (hitSphere > 0.0f) {
+			XMVECTOR normal = XMVector3Normalize(
+				// _ray.At(hitSphere) - (0, 0, 1)
+				_ray.At(hitSphere) - XMVectorSetZ(XMVectorZero(), 1)
+			);
+
+			// Calculate color
+			XMFLOAT3 color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+			XMStoreFloat3(&color,
+				XMVectorScale(normal + XMLoadFloat3(&color), 0.5f)
+			);
+
+			return XMFLOAT4(color.x, color.y, color.z, 1.0f);
 		}
 	}
+
+	// Sky color
 
 	// Unpack XMFLOAT3s
 	XMVECTOR vecRayOrigin = XMLoadFloat3(&_ray.Origin);
@@ -188,9 +205,6 @@ DirectX::XMFLOAT4 Game::RayColor(Ray _ray)
 	XMFLOAT4 color2(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Calculate interpolated color
-	/*if (abs(a) < 0.1f) {
-		return XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
-	}*/
 	XMStoreFloat4(&outColor, XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a));
 
 	return outColor;
