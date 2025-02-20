@@ -22,7 +22,8 @@ Camera::Camera(
 	orthographicWidth(10.0f),
 	textureScale(textureScaleStatic),
 	textureScaleStatic(textureScaleStatic),
-	textureScaleMoving(textureScaleMoving)
+	textureScaleMoving(textureScaleMoving),
+	samplesPerPixel(10)
 {
 	transform = std::make_shared<Transform>();
 	transform->SetPosition(position);
@@ -147,6 +148,17 @@ void Camera::SetMovingTextureScale(float _scale)
 	textureScaleMoving = _scale;
 }
 
+int Camera::GetSamplesPerPixel()
+{
+	return samplesPerPixel;
+}
+
+void Camera::SetSamplesPerPixel(int _samples)
+{
+	samplesPerPixel = _samples;
+	pixelSamplesScale = 1.0f / samplesPerPixel;
+}
+
 CameraProjectionType Camera::GetProjectionType() { return projectionType; }
 void Camera::SetProjectionType(CameraProjectionType type) 
 {
@@ -162,6 +174,7 @@ void Camera::Initialize()
 		(1.0f / (Window::Height() * textureScale))
 	);
 	currentScanline = 0;
+	pixelSamplesScale = 1.0f / samplesPerPixel;
 	UpdateViewportData();
 }
 
@@ -217,6 +230,11 @@ void Camera::UpdateViewportData()
 			0.5f
 		)
 	);
+}
+
+Ray Camera::GetRay(unsigned int _i, unsigned int _j)
+{
+	return Ray();
 }
 
 DirectX::XMFLOAT4 Camera::RayColor(const Ray& _ray, const Hittable& _world)
@@ -402,23 +420,30 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 	{
 		for (unsigned int x = 0; x < w; x++)
 		{
-			// Create ray
-			Ray ray = {};
-			ray.Origin = cameraPosition;
+			XMFLOAT4 pixelColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 
-			// Find center of this pixel
-			XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
-				XMVectorScale(vecPixelDeltaU, (float)x) +
-				XMVectorScale(vecPixelDeltaV, (float)y);
+			for (int sample = 0; sample < samplesPerPixel; sample++) {
+				// Create ray
+				Ray ray = GetRay(x, y);
 
-			// Get the direction of the ray through the center of this pixel
-			XMVECTOR vecRayDirection = pixelCenter - vecCameraPosition;
-			XMStoreFloat3(&ray.Direction, vecRayDirection);
+				// Find center of this pixel
+				XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
+					XMVectorScale(vecPixelDeltaU, (float)x) +
+					XMVectorScale(vecPixelDeltaV, (float)y);
 
-			//XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
-			XMFLOAT4 color = RayColor(ray, _world);
+				// Get the direction of the ray through the center of this pixel
+				XMVECTOR vecRayDirection = pixelCenter - vecCameraPosition;
+				XMStoreFloat3(&ray.Direction, vecRayDirection);
 
-			_cpuTexture->SetColor(x, y, color);
+				//XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
+				XMFLOAT4 color = RayColor(ray, _world);
+
+				XMStoreFloat4(&pixelColor,
+					XMLoadFloat4(&color) + XMLoadFloat4(&pixelColor)
+				);
+
+				_cpuTexture->SetColor(x, y, color);
+			}
 		}
 		y++;
 	}

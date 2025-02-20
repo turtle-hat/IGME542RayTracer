@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 
@@ -19,6 +20,16 @@ const float pi = 3.1415926535897932385f;
 
 inline float DegreesToRadians(float degrees) {
 	return degrees * pi / 180.0f;
+}
+
+inline float RandomFloat() {
+	// Returns a random real in [0,1).
+	return std::rand() / (RAND_MAX + 1.0f);
+}
+
+inline float RandomFloat(float _min, float _max) {
+	// Returns a random real in [_min,_max).
+	return _min + (_max - _min) * RandomFloat();
 }
 
 // Common Headers

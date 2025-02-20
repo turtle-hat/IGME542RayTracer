@@ -12,6 +12,7 @@ public:
 	float Size() const;
 	bool Contains(float _x) const;
 	bool Surrounds(float _x) const;
+	float Clamp(float _x) const;
 
 	static const Interval Empty, Universe;
 };

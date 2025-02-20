@@ -5,6 +5,8 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 
+#include "Helpers.h"
+
 class CPUTexture
 {
 public:
@@ -31,7 +33,6 @@ public:
 	unsigned int GetHeight();
 
 private:
-
 	// Helper for 2D indices to 1D index
 	unsigned int PixelIndex(unsigned int x, unsigned int y);
 

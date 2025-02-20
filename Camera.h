@@ -51,6 +51,9 @@ public:
 	float GetOrthographicWidth();
 	void SetOrthographicWidth(float width);
 
+	CameraProjectionType GetProjectionType();
+	void SetProjectionType(CameraProjectionType type);
+
 	float GetTextureScale();
 
 	float GetStaticTextureScale();
@@ -59,11 +62,12 @@ public:
 	float GetMovingTextureScale();
 	void SetMovingTextureScale(float _scale);
 
-	CameraProjectionType GetProjectionType();
-	void SetProjectionType(CameraProjectionType type);
+	int GetSamplesPerPixel();
+	void SetSamplesPerPixel(int _samples);
 
 
 
+	
 
 protected:
 	// --- VARIABLES ---
@@ -117,6 +121,9 @@ protected:
 	// World position of the center of upper-leftmost pixel of the viewport
 	DirectX::XMFLOAT3 upperLeftPixelCenter;
 
+	int samplesPerPixel;
+	float pixelSamplesScale;
+
 
 
 	// --- FUNCTIONS ---
@@ -128,6 +135,9 @@ protected:
 
 	// Drawing helper functions
 
+	// Construct camera ray originating from origin and directed at randomly
+	// sampled point around pixel location _i, _j.
+	Ray GetRay(unsigned int _i, unsigned int _j);
 	// Find the color returned by a given ray
 	DirectX::XMFLOAT4 RayColor(const Ray& _ray, const Hittable& _world);
 };
