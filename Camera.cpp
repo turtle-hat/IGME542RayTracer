@@ -20,6 +20,7 @@ Camera::Camera(
 	farClip(farClip),
 	projectionType(projType),
 	orthographicWidth(10.0f),
+	textureScale(textureScaleStatic),
 	textureScaleStatic(textureScaleStatic),
 	textureScaleMoving(textureScaleMoving)
 {
