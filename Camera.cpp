@@ -281,15 +281,14 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 
 	if (_world.Hit(_ray, Interval(0.001f, infinity), record)) {
 		// Calculate color
-		XMFLOAT4 colorBlank = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		XMVECTOR attenuation = XMLoadFloat4(&colorBlank);
+		XMVECTOR attenuation = XMVectorZero();
 
 		Ray scattered;
 		if (record.material->Scatter(_ray, record, attenuation, scattered)) {
 			return attenuation * RayColor(scattered, _depth - 1, _world);
 		}
 
-		return XMLoadFloat4(&colorBlank);
+		return XMVectorZero();
 	}
 
 	// Sky color
@@ -307,11 +306,11 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 	// Find y component of ray
 	float a = 0.5f * (unitDirection.y + 1.0f);
 
-	XMFLOAT4 color1(1.0f, 1.0f, 1.0f, 1.0f);
-	XMFLOAT4 color2(0.5f, 0.7f, 1.0f, 1.0f);
+	XMFLOAT3 color1(1.0f, 1.0f, 1.0f);
+	XMFLOAT3 color2(0.5f, 0.7f, 1.0f);
 
 	// Calculate interpolated color
-	return XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a);
+	return XMVectorLerp(XMLoadFloat3(&color1), XMLoadFloat3(&color2), a);
 }
 
 
@@ -456,8 +455,8 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 	{
 		for (unsigned int x = 0; x < w; x++)
 		{
-			XMFLOAT4 pixelColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-			XMVECTOR vecPixelColor = XMLoadFloat4(&pixelColor);
+			XMFLOAT3 pixelColor = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			XMVECTOR vecPixelColor = XMLoadFloat3(&pixelColor);
 
 			for (int sample = 0; sample < samplesPerPixel; sample++) {
 				// Create ray
@@ -468,13 +467,13 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 			}
 
 			// Average, gamma-correct, & store
-			XMStoreFloat4(&pixelColor, 
+			XMStoreFloat3(&pixelColor, 
 				LinearToGamma(
 					XMVectorScale(vecPixelColor, pixelSamplesScale)
 				)
 			);
 			// Set final pixel color
-			_cpuTexture->SetColor(x, y, pixelColor);
+			_cpuTexture->SetColor(x, y, XMFLOAT4(pixelColor.x, pixelColor.y, pixelColor.z, 1.0f));
 		}
 		y++;
 	}

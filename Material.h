@@ -8,7 +8,7 @@ public:
 	virtual ~Material() = default;
 
 	virtual bool Scatter(
-		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR _attenuation, Ray& _scattered
+		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR& _attenuation, Ray& _scattered
 	) const {
 		return false;
 	}
@@ -16,25 +16,25 @@ public:
 
 class Lambertian : public Material {
 public:
-	Lambertian(const DirectX::XMFLOAT4& _albedo) : albedo(_albedo) {}
+	Lambertian(const DirectX::XMFLOAT3& _albedo) : albedo(_albedo) {}
 
 	bool Scatter(
-		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR _attenuation, Ray& _scattered
+		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR& _attenuation, Ray& _scattered
 	) const override;
 
 private:
-	DirectX::XMFLOAT4 albedo;
+	DirectX::XMFLOAT3 albedo;
 };
 
 class Metal : public Material {
 public:
-	Metal(const DirectX::XMFLOAT4& _albedo) : albedo(_albedo) {}
+	Metal(const DirectX::XMFLOAT3& _albedo) : albedo(_albedo) {}
 
 	bool Scatter(
-		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR _attenuation, Ray& _scattered
+		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR& _attenuation, Ray& _scattered
 	) const override;
 
 private:
-	DirectX::XMFLOAT4 albedo;
+	DirectX::XMFLOAT3 albedo;
 };
 

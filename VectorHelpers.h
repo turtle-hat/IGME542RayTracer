@@ -45,16 +45,12 @@ inline DirectX::XMFLOAT3 RandomOnHemisphere(const DirectX::XMFLOAT3 _normal) {
 }
 
 inline DirectX::XMVECTOR LinearToGamma(DirectX::XMVECTOR _linearColor) {
-	return DirectX::XMVectorSetW(
-		DirectX::XMVectorSqrt(
-			// Clamp _linearColor above 0
-			DirectX::XMVectorMax(
-				_linearColor,
-				DirectX::XMVectorZero()
-			)
-			// Find square root to gamma correct
-		),
-		// Set W back to its original value
-		DirectX::XMVectorGetW(_linearColor)
+	// Find square root to gamma correct
+	return DirectX::XMVectorSqrt(
+		// Clamp _linearColor above 0
+		DirectX::XMVectorMax(
+			_linearColor,
+			DirectX::XMVectorZero()
+		)
 	);
 }

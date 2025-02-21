@@ -103,10 +103,10 @@ void Game::OnResize()
 
 void Game::InitializeWorld()
 {
-	auto matGround	= make_shared<Lambertian>(XMFLOAT4(0.8f, 0.8f, 0.0f, 1.0f));
-	auto matCenter	= make_shared<Lambertian>(XMFLOAT4(0.1f, 0.2f, 0.5f, 1.0f));
-	auto matLeft	= make_shared<Metal>(XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f));
-	auto matRight	= make_shared<Metal>(XMFLOAT4(0.8f, 0.6f, 0.2f, 1.0f));
+	auto matGround	= make_shared<Lambertian>(XMFLOAT3(0.8f, 0.8f, 0.0f));
+	auto matCenter	= make_shared<Lambertian>(XMFLOAT3(0.1f, 0.2f, 0.5f));
+	auto matLeft	= make_shared<Metal>(XMFLOAT3(0.8f, 0.8f, 0.8f));
+	auto matRight	= make_shared<Metal>(XMFLOAT3(0.8f, 0.6f, 0.2f));
 
 	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	-100.5f,	1.0f),	100.0f,	matGround));
 	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	 0.0f,		1.2f),	0.5f,	matCenter));
