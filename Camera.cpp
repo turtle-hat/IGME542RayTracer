@@ -278,7 +278,7 @@ void Camera::UpdateViewportData()
 	// Calculate camera defocus disk basis vectors
 	auto defocusRadius = focusDist * std::tan(DegreesToRadians(defocusAngle / 2.0f));
 	XMStoreFloat3(&defocusDiskU, XMVectorScale(vecCameraRight, defocusRadius));
-	XMStoreFloat3(&defocusDiskU, XMVectorScale(vecCameraUp, defocusRadius));
+	XMStoreFloat3(&defocusDiskV, XMVectorScale(vecCameraUp, defocusRadius));
 }
 
 Ray Camera::GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDeltaU, DirectX::XMVECTOR _pixelDeltaV, DirectX::XMVECTOR _cameraPosition) const
