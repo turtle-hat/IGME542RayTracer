@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "Window.h"
 #include "Input.h"
+#include "VectorHelpers.h"
 
 using namespace DirectX;
 
@@ -267,7 +268,8 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, const Hittable& _world)
 		// Calculate color
 		XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 2.0f); // Alpha is set to 2 so it'll be scaled to 1
 
-		return XMVectorScale(XMLoadFloat3(&record.normal) + XMLoadFloat4(&color), 0.5f);
+		XMFLOAT3 randomDirection = RandomOnHemisphere(record.normal);
+		return XMVectorScale(RayColor(Ray(record.point, randomDirection), _world), 0.5f);
 	}
 
 	// Sky color

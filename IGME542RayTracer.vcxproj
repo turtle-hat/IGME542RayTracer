@@ -183,6 +183,7 @@
     <ClInclude Include="RayTracingStructs.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="VectorHelpers.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
