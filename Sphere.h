@@ -6,7 +6,11 @@ class Sphere :
 	public Hittable
 {
 public:
-	Sphere(DirectX::XMFLOAT3 _origin, float _radius) : origin(_origin), radius(fmax(0.0f, _radius)) {}
+	Sphere(DirectX::XMFLOAT3 _origin, float _radius, std::shared_ptr<Material> _material) :
+		origin(_origin),
+		radius(fmax(0.0f, _radius)),
+		material(_material)
+	{}
 	bool Hit(const Ray& _ray, Interval _rayT, HitRecord& _record) const override;
 private:
 	DirectX::XMFLOAT3 origin;

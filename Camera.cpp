@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Input.h"
 #include "VectorHelpers.h"
+#include "Material.h"
 
 using namespace DirectX;
 
@@ -280,11 +281,15 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 
 	if (_world.Hit(_ray, Interval(0.001f, infinity), record)) {
 		// Calculate color
-		XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 2.0f); // Alpha is set to 2 so it'll be scaled to 1
+		XMFLOAT4 colorBlank = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		XMVECTOR attenuation = XMLoadFloat4(&colorBlank);
 
-		XMFLOAT3 randomDirection;
-		XMStoreFloat3(&randomDirection, XMLoadFloat3(&record.normal) + RandomUnitVector());
-		return XMVectorScale(RayColor(Ray(record.point, randomDirection), _depth - 1, _world), 0.5f);
+		Ray scattered;
+		if (record.material->Scatter(_ray, record, attenuation, scattered)) {
+			return attenuation * RayColor(scattered, _depth - 1, _world);
+		}
+
+		return XMLoadFloat4(&colorBlank);
 	}
 
 	// Sky color
