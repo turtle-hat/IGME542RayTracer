@@ -1,10 +1,13 @@
 #pragma once
 #include "Helpers.h"
 
+class Material;
+
 class HitRecord {
 public:
 	DirectX::XMFLOAT3 point;
 	DirectX::XMFLOAT3 normal;
+	shared_ptr<Material> material;
 	float t;
 	bool isFrontFace;
 

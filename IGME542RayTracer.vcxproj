@@ -164,6 +164,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Interval.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="PathHelpers.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Transform.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="HittableList.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Interval.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="PathHelpers.h" />
     <ClInclude Include="RayTracingStructs.h" />
     <ClInclude Include="Sphere.h" />

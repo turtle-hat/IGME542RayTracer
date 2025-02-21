@@ -40,6 +40,7 @@ bool Sphere::Hit(const Ray& _ray, Interval _rayT, HitRecord& _record) const
 	XMVECTOR hitPoint = _ray.At(root);
 	XMStoreFloat3(&_record.point, hitPoint);
 	_record.SetFaceNormal(vecRayDir, XMVectorScale(hitPoint - vecSphereOri, 1.0f / radius));
+	_record.material = material;
 
 	return true;
 }
