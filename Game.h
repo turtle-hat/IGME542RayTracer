@@ -31,8 +31,8 @@ private:
 	// --- CONSTANTS ---
 
 	// How much to scale the render texture if the camera is moving or static
-	const float STATIC_TEXTURE_SCALE = 0.5f;
-	const float MOVING_TEXTURE_SCALE = 0.1f;
+	const float STATIC_TEXTURE_SCALE = 0.25f;
+	const float MOVING_TEXTURE_SCALE = 0.05f;
 
 	// --- VARIABLES ---
 

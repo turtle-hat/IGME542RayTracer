@@ -51,6 +51,9 @@ void Game::Initialize()
 		MOVING_TEXTURE_SCALE
 		);
 
+	camera->SetSamplesPerPixel(100);
+	camera->SetMaxDepth(10);
+
 	// Set initial graphics API state
 	{
 		Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

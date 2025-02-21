@@ -24,7 +24,8 @@ Camera::Camera(
 	textureScale(textureScaleStatic),
 	textureScaleStatic(textureScaleStatic),
 	textureScaleMoving(textureScaleMoving),
-	samplesPerPixel(10)
+	samplesPerPixel(10),
+	maxDepth(10)
 {
 	transform = std::make_shared<Transform>();
 	transform->SetPosition(position);
@@ -160,6 +161,16 @@ void Camera::SetSamplesPerPixel(int _samples)
 	pixelSamplesScale = 1.0f / samplesPerPixel;
 }
 
+int Camera::GetMaxDepth()
+{
+	return maxDepth;
+}
+
+void Camera::SetMaxDepth(int _depth)
+{
+	maxDepth = _depth;
+}
+
 CameraProjectionType Camera::GetProjectionType() { return projectionType; }
 void Camera::SetProjectionType(CameraProjectionType type) 
 {
@@ -259,17 +270,20 @@ DirectX::XMFLOAT2 Camera::SampleSquare() const
 	return XMFLOAT2(RandomFloat() - 0.5f, RandomFloat() - 0.5f);
 }
 
-DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, const Hittable& _world)
+DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& _world)
 {
+	if (_depth <= 0)
+		return XMVectorZero();
+
 	// Test for world collision
 	HitRecord record;
 
-	if (_world.Hit(_ray, Interval(0, infinity), record)) {
+	if (_world.Hit(_ray, Interval(0.001f, infinity), record)) {
 		// Calculate color
 		XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 2.0f); // Alpha is set to 2 so it'll be scaled to 1
 
 		XMFLOAT3 randomDirection = RandomOnHemisphere(record.normal);
-		return XMVectorScale(RayColor(Ray(record.point, randomDirection), _world), 0.5f);
+		return XMVectorScale(RayColor(Ray(record.point, randomDirection), _depth - 1, _world), 0.5f);
 	}
 
 	// Sky color
@@ -444,7 +458,7 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 				Ray ray = GetRay(x, y, vecPixelDeltaU, vecPixelDeltaV, vecCameraPosition);
 
 				// Accumulate color
-				vecPixelColor = vecPixelColor + RayColor(ray, _world);
+				vecPixelColor = vecPixelColor + RayColor(ray, maxDepth, _world);
 			}
 
 			// Average, store, and set final pixel color

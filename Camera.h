@@ -65,6 +65,9 @@ public:
 	int GetSamplesPerPixel();
 	void SetSamplesPerPixel(int _samples);
 
+	int GetMaxDepth();
+	void SetMaxDepth(int _depth);
+
 
 
 	
@@ -123,6 +126,7 @@ protected:
 
 	int samplesPerPixel;
 	float pixelSamplesScale;
+	int maxDepth;
 
 
 
@@ -141,7 +145,7 @@ protected:
 	// Returns a 2D vector to a random point in X: [-0.5, +0.5], Y: [-0.5, +0.5] unit square
 	DirectX::XMFLOAT2 SampleSquare() const;
 	// Find the color returned by a given ray
-	DirectX::XMVECTOR RayColor(const Ray& _ray, const Hittable& _world);
+	DirectX::XMVECTOR RayColor(const Ray& _ray, int _depth, const Hittable& _world);
 };
 
 
