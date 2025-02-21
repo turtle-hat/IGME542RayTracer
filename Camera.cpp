@@ -282,7 +282,8 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 		// Calculate color
 		XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 2.0f); // Alpha is set to 2 so it'll be scaled to 1
 
-		XMFLOAT3 randomDirection = RandomOnHemisphere(record.normal);
+		XMFLOAT3 randomDirection;
+		XMStoreFloat3(&randomDirection, XMLoadFloat3(&record.normal) + RandomUnitVector());
 		return XMVectorScale(RayColor(Ray(record.point, randomDirection), _depth - 1, _world), 0.5f);
 	}
 
@@ -301,8 +302,8 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 	// Find y component of ray
 	float a = 0.5f * (unitDirection.y + 1.0f);
 
-	XMFLOAT4 color1(0.5f, 0.7f, 1.0f, 1.0f);
-	XMFLOAT4 color2(1.0f, 1.0f, 1.0f, 1.0f);
+	XMFLOAT4 color1(1.0f, 1.0f, 1.0f, 1.0f);
+	XMFLOAT4 color2(0.5f, 0.7f, 1.0f, 1.0f);
 
 	// Calculate interpolated color
 	return XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a);
@@ -461,8 +462,13 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 				vecPixelColor = vecPixelColor + RayColor(ray, maxDepth, _world);
 			}
 
-			// Average, store, and set final pixel color
-			XMStoreFloat4(&pixelColor, XMVectorScale(vecPixelColor, pixelSamplesScale));
+			// Average, gamma-correct, & store
+			XMStoreFloat4(&pixelColor, 
+				LinearToGamma(
+					XMVectorScale(vecPixelColor, pixelSamplesScale)
+				)
+			);
+			// Set final pixel color
 			_cpuTexture->SetColor(x, y, pixelColor);
 		}
 		y++;
