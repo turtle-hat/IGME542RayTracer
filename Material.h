@@ -28,7 +28,7 @@ private:
 
 class Metal : public Material {
 public:
-	Metal(const DirectX::XMFLOAT3& _albedo) : albedo(_albedo) {}
+	Metal(const DirectX::XMFLOAT3& _albedo, float _fuzz) : albedo(_albedo), fuzz(_fuzz < 1.0f ? _fuzz : 1.0f) {}
 
 	bool Scatter(
 		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR& _attenuation, Ray& _scattered
@@ -36,5 +36,6 @@ public:
 
 private:
 	DirectX::XMFLOAT3 albedo;
+	float fuzz;
 };
 
