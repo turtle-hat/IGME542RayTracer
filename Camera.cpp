@@ -237,18 +237,15 @@ Ray Camera::GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDel
 	Ray result;
 
 	XMFLOAT2 offset = SampleSquare();
-	XMVECTOR vecPixelSample =
-		XMLoadFloat3(&upperLeftPixelCenter) +								// Start at center
-		XMVectorScale(XMLoadFloat3(&pixelDeltaU), offset.x + (float)_i) +	// Offset by X
-		XMVectorScale(XMLoadFloat3(&pixelDeltaV), offset.y + (float)_j);	// Offset by Y
 
 	// Find center of this pixel
-	XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
-		XMVectorScale(_pixelDeltaU, (float)_i) +
-		XMVectorScale(_pixelDeltaV, (float)_j);
+	XMVECTOR vecPixelSample =
+		XMLoadFloat3(&upperLeftPixelCenter) +				// Start at center
+		XMVectorScale(_pixelDeltaU, offset.x + (float)_i) +	// Offset by X
+		XMVectorScale(_pixelDeltaV, offset.y + (float)_j);	// Offset by Y
 
 	// Get the direction of the ray through the center of this pixel
-	XMVECTOR vecRayDirection = pixelCenter - _cameraPosition;
+	XMVECTOR vecRayDirection = vecPixelSample - _cameraPosition;
 	XMStoreFloat3(&result.Direction, vecRayDirection);
 
 	result.Origin = transform->GetPosition();
