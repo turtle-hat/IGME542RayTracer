@@ -68,6 +68,12 @@ public:
 	int GetMaxDepth();
 	void SetMaxDepth(int _depth);
 
+	float GetDefocusAngle();
+	void  SetDefocusAngle(float _angle);
+
+	float GetFocusDist();
+	void  SetFocusDist(float _dist);
+
 
 
 	
@@ -86,6 +92,9 @@ protected:
 	float nearClip;
 	float farClip;
 	float orthographicWidth;
+
+	float defocusAngle;	// Variation angle of rays through each pixel
+	float focusDist;	// Distance from camera position to plane of perfect focus
 
 	CameraProjectionType projectionType;
 
@@ -124,6 +133,10 @@ protected:
 	// World position of the center of upper-leftmost pixel of the viewport
 	DirectX::XMFLOAT3 upperLeftPixelCenter;
 
+	// Defocus disk horizontal and vertical radius
+	DirectX::XMFLOAT3 defocusDiskU;
+	DirectX::XMFLOAT3 defocusDiskV;
+
 	int samplesPerPixel;
 	float pixelSamplesScale;
 	int maxDepth;
@@ -146,6 +159,7 @@ protected:
 	DirectX::XMFLOAT2 SampleSquare() const;
 	// Find the color returned by a given ray
 	DirectX::XMVECTOR RayColor(const Ray& _ray, int _depth, const Hittable& _world);
+	DirectX::XMFLOAT3 DefocusDiskSample(DirectX::XMVECTOR _center) const;
 };
 
 

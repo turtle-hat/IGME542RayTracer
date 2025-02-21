@@ -26,7 +26,9 @@ Camera::Camera(
 	textureScaleStatic(textureScaleStatic),
 	textureScaleMoving(textureScaleMoving),
 	samplesPerPixel(10),
-	maxDepth(10)
+	maxDepth(10),
+	defocusAngle(0.0f),
+	focusDist(10.0f)
 {
 	transform = std::make_shared<Transform>();
 	transform->SetPosition(position);
@@ -172,6 +174,26 @@ void Camera::SetMaxDepth(int _depth)
 	maxDepth = _depth;
 }
 
+float Camera::GetDefocusAngle()
+{
+	return defocusAngle;
+}
+
+void Camera::SetDefocusAngle(float _angle)
+{
+	defocusAngle = _angle;
+}
+
+float Camera::GetFocusDist()
+{
+	return focusDist;
+}
+
+void Camera::SetFocusDist(float _dist)
+{
+	focusDist = _dist;
+}
+
 CameraProjectionType Camera::GetProjectionType() { return projectionType; }
 void Camera::SetProjectionType(CameraProjectionType type) 
 {
@@ -196,7 +218,7 @@ void Camera::UpdateViewportData()
 	// Determine viewport dimensions
 	auto theta = DegreesToRadians(fieldOfView);
 	auto h = std::tan(theta / 2.0f);
-	auto viewportHeight = 2 * h * nearClip;
+	auto viewportHeight = 2 * h * focusDist;
 
 	viewportSize = XMFLOAT2(viewportHeight * Window::AspectRatio(), viewportHeight);
 	viewportPixelPercentage = XMFLOAT2(
@@ -210,12 +232,16 @@ void Camera::UpdateViewportData()
 	XMFLOAT3 cameraRight = transform->GetRight();
 	XMFLOAT3 cameraUp = transform->GetUp();
 
+	XMVECTOR vecCameraForward = XMLoadFloat3(&cameraForward);
+	XMVECTOR vecCameraRight = XMLoadFloat3(&cameraRight);
+	XMVECTOR vecCameraUp = XMLoadFloat3(&cameraUp);
+
 	XMStoreFloat3(&viewportU, XMVectorScale(
-		XMLoadFloat3(&cameraRight),
+		vecCameraRight,
 		viewportSize.x)
 	);
 	XMStoreFloat3(&viewportV, XMVectorScale(
-		XMVectorScale(XMLoadFloat3(&cameraUp), -1.0f), // Scale by -1 to invert V
+		XMVectorScale(vecCameraUp, -1.0f), // Scale by -1 to invert V
 		viewportSize.y)
 	);
 
@@ -233,8 +259,8 @@ void Camera::UpdateViewportData()
 	XMStoreFloat3(&upperLeftViewportLocation,
 		XMLoadFloat3(&cameraPosition) +
 		XMVectorScale(
-			XMLoadFloat3(&cameraForward),
-			nearClip
+			vecCameraForward,
+			focusDist
 		) -
 		XMVectorScale(XMLoadFloat3(&viewportU), 0.5f) -
 		XMVectorScale(XMLoadFloat3(&viewportV), 0.5f)
@@ -248,6 +274,11 @@ void Camera::UpdateViewportData()
 			0.5f
 		)
 	);
+
+	// Calculate camera defocus disk basis vectors
+	auto defocusRadius = focusDist * std::tan(DegreesToRadians(defocusAngle / 2.0f));
+	XMStoreFloat3(&defocusDiskU, XMVectorScale(vecCameraRight, defocusRadius));
+	XMStoreFloat3(&defocusDiskU, XMVectorScale(vecCameraUp, defocusRadius));
 }
 
 Ray Camera::GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDeltaU, DirectX::XMVECTOR _pixelDeltaV, DirectX::XMVECTOR _cameraPosition) const
@@ -266,7 +297,7 @@ Ray Camera::GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDel
 	XMVECTOR vecRayDirection = vecPixelSample - _cameraPosition;
 	XMStoreFloat3(&result.Direction, vecRayDirection);
 
-	result.Origin = transform->GetPosition();
+	result.Origin = (defocusAngle <= 0) ? transform->GetPosition() : DefocusDiskSample(_cameraPosition);
 
 	return result;
 }
@@ -316,6 +347,22 @@ DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, int _depth, const Hittable& 
 
 	// Calculate interpolated color
 	return XMVectorLerp(XMLoadFloat3(&color1), XMLoadFloat3(&color2), a);
+}
+
+DirectX::XMFLOAT3 Camera::DefocusDiskSample(DirectX::XMVECTOR _cameraPosition) const
+{
+	// Returns a random point in the camera's defocus disk
+	auto p = RandomInUnitDisk();
+	
+	XMFLOAT3 result;
+	
+	XMStoreFloat3(&result,
+		_cameraPosition +
+		XMVectorScale(XMLoadFloat3(&defocusDiskU), p.x) +
+		XMVectorScale(XMLoadFloat3(&defocusDiskV), p.y)
+	);
+
+	return result;
 }
 
 

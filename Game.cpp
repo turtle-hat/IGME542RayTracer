@@ -42,7 +42,7 @@ void Game::Initialize()
 		XMFLOAT3(-2.0f, 2.0f, -1.0f),	// Position
 		1.0f,						// Move speed
 		0.002f,						// Look speed
-		20.0f,						// Field of view
+		90.0f,						// Field of view
 		Window::AspectRatio(),		// Aspect ratio
 		1.0f,						// Near clip
 		100.0f,						// Far clip
@@ -53,6 +53,9 @@ void Game::Initialize()
 
 	camera->SetSamplesPerPixel(100);
 	camera->SetMaxDepth(10);
+
+	camera->SetDefocusAngle(10.0f);
+	camera->SetFocusDist(3.4f);
 
 	// Set initial graphics API state
 	{

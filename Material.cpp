@@ -72,7 +72,7 @@ bool Dielectric::Scatter(const Ray& _rayIn, const HitRecord& _record, DirectX::X
 float Dielectric::Reflectance(float _cosine, float _refractionIndex)
 {
 	// Schlick's approximation for reflectance
-	auto r0 = (1.0f - _refractionIndex) / (1.0f + _refractionIndex);
+	float r0 = (1.0f - _refractionIndex) / (1.0f + _refractionIndex);
 	r0 = r0 * r0;
-	return r0 + (1.0f - r0) * std::pow((1.0f - _cosine), 5);
+	return r0 + (1.0f - r0) * std::powf((1.0f - _cosine), 5.0f);
 }

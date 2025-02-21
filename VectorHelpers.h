@@ -32,6 +32,21 @@ inline DirectX::XMVECTOR RandomUnitVector() {
 	}
 }
 
+inline DirectX::XMFLOAT2 RandomInUnitDisk() {
+	while (true) {
+		// Generate new vector on plane
+		DirectX::XMFLOAT2 p(RandomFloat(-1.0f, 1.0f), RandomFloat(-1.0f, 1.0f));
+		
+		// Check length
+		auto pCheck = DirectX::XMLoadFloat2(&p);
+		float length;
+		DirectX::XMStoreFloat(&length, DirectX::XMVector2LengthSq(pCheck));
+		if (length < 1.0f) {
+			return p;
+		}
+	}
+}
+
 inline DirectX::XMFLOAT3 RandomOnHemisphere(const DirectX::XMFLOAT3 _normal) {
 	// Get random unit vector
 	DirectX::XMVECTOR onUnitSphere = RandomUnitVector();
