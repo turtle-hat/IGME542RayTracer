@@ -9,6 +9,7 @@
 #include <d3dcompiler.h>
 
 #include "Helpers.h"
+#include "VectorHelpers.h"
 #include "Vertex.h"
 #include "Hittable.h"
 #include "HittableList.h"
@@ -39,7 +40,7 @@ void Game::Initialize()
 
 	// Create the camera
 	camera = std::make_shared<FPSCamera>(
-		XMFLOAT3(-2.0f, 2.0f, -1.0f),	// Position
+		XMFLOAT3(13.0f, 2.0f, -3.0f),	// Position
 		1.0f,						// Move speed
 		0.002f,						// Look speed
 		20.0f,						// Field of view
@@ -54,8 +55,12 @@ void Game::Initialize()
 	camera->SetSamplesPerPixel(100);
 	camera->SetMaxDepth(10);
 
-	camera->SetDefocusAngle(5.0f);
-	camera->SetFocusDist(3.4f);
+	camera->SetDefocusAngle(0.6f);
+	camera->SetFocusDist(10.0f);
+
+	shared_ptr<Transform> cameraTransform = camera->GetTransform();
+	cameraTransform->SetRotation(0.15f, 74.02f, 0.0f);
+	camera->UpdateProjectionMatrix(Window::AspectRatio());
 
 	// Set initial graphics API state
 	{
@@ -106,17 +111,53 @@ void Game::OnResize()
 
 void Game::InitializeWorld()
 {
-	auto matGround	= make_shared<Lambertian>(XMFLOAT3(0.8f, 0.8f, 0.0f));
-	auto matCenter	= make_shared<Lambertian>(XMFLOAT3(0.1f, 0.2f, 0.5f));
-	auto matLeft	= make_shared<Dielectric>(1.50f);
-	auto matBubble	= make_shared<Dielectric>(1.0f / 1.50f);
-	auto matRight	= make_shared<Metal>(XMFLOAT3(0.8f, 0.6f, 0.2f), 1.0f);
+	auto matGround = make_shared<Lambertian>(XMFLOAT3(0.5f, 0.5f, 0.5f));
+	world.Add(make_shared<Sphere>(XMFLOAT3(0.0f, -1000.0f, 0.0f), 1000.0f, matGround));
 
-	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	-100.5f,	1.0f),	100.0f,	matGround));
-	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	 0.0f,		1.2f),	0.5f,	matCenter));
-	world.Add(make_shared<Sphere>(XMFLOAT3(-1.0f,	 0.0f,		1.0f),	0.5f,	matLeft));
-	world.Add(make_shared<Sphere>(XMFLOAT3(-1.0f,	 0.0f,		1.0f),	0.4f,	matBubble));
-	world.Add(make_shared<Sphere>(XMFLOAT3( 1.0f,	 0.0f,		1.0f),	0.5f,	matRight));
+	XMFLOAT3 emptyPoint(4.0f, 0.2f, 0.0f);
+
+	for (int a = -11; a < 11; a++) {
+		for (int b = -11; b < 11; b++) {
+			auto chooseMat = RandomFloat();
+			XMFLOAT3 center(a + 0.9f * RandomFloat(), 0.2f, b + 0.9f * RandomFloat());
+
+			float sqLength;
+			XMStoreFloat(&sqLength, XMVector3LengthSq(XMLoadFloat3(&center) - XMLoadFloat3(&emptyPoint)));
+			if (sqLength > 0.81f) {
+				shared_ptr<Material> sphereMaterial;
+
+				if (chooseMat < 0.8f) {
+					// Diffuse
+					XMFLOAT3 albedo;
+					XMStoreFloat3(&albedo, RandomVector() * RandomVector());
+					sphereMaterial = make_shared<Lambertian>(albedo);
+					world.Add(make_shared<Sphere>(center, 0.2f, sphereMaterial));
+				}
+				else if (chooseMat < 0.95f) {
+					// Metal
+					XMFLOAT3 albedo;
+					XMStoreFloat3(&albedo, RandomVector(0.5, 1.0f));
+					float fuzz = RandomFloat(0.0f, 0.5f);
+					sphereMaterial = make_shared<Metal>(albedo, fuzz);
+					world.Add(make_shared<Sphere>(center, 0.2f, sphereMaterial));
+				}
+				else {
+					// Glass
+					sphereMaterial = make_shared<Dielectric>(1.5f);
+					world.Add(make_shared<Sphere>(center, 0.2f, sphereMaterial));
+				}
+			}
+		}
+	}
+
+	auto material1 = make_shared<Dielectric>(1.5f);
+	world.Add(make_shared<Sphere>(XMFLOAT3(0.0f, 1.0f, 0.0f), 1.0f, material1));
+
+	auto material2 = make_shared<Lambertian>(XMFLOAT3(0.4f, 0.2f, 0.1f));
+	world.Add(make_shared<Sphere>(XMFLOAT3(-4.0f, 1.0f, 0.0f), 1.0f, material2));
+
+	auto material3 = make_shared<Metal>(XMFLOAT3(0.7f, 0.6f, 0.5f), 0.0f);
+	world.Add(make_shared<Sphere>(XMFLOAT3(4.0f, 1.0f, 0.0f), 1.0f, material3));
 }
 
 // --------------------------------------------------------

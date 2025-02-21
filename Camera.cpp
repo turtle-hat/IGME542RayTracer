@@ -398,6 +398,7 @@ void FPSCamera::SetMouseLookSpeed(float speed) { mouseLookSpeed = speed; }
 
 bool FPSCamera::Update(float dt)
 {
+	return false;
 	// Flag, set to true if any input detected
 	bool isInputDetected = false;
 	// Current speed
