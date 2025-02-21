@@ -40,7 +40,7 @@ void Game::Initialize()
 	// Create the camera
 	camera = std::make_shared<FPSCamera>(
 		XMFLOAT3(0.0f, 0.0f, 0.0f),	// Position
-		5.0f,						// Move speed
+		1.0f,						// Move speed
 		0.002f,						// Look speed
 		XM_PIDIV4,					// Field of view
 		Window::AspectRatio(),		// Aspect ratio
@@ -105,12 +105,14 @@ void Game::InitializeWorld()
 {
 	auto matGround	= make_shared<Lambertian>(XMFLOAT3(0.8f, 0.8f, 0.0f));
 	auto matCenter	= make_shared<Lambertian>(XMFLOAT3(0.1f, 0.2f, 0.5f));
-	auto matLeft	= make_shared<Metal>(XMFLOAT3(0.8f, 0.8f, 0.8f), 0.3f);
+	auto matLeft	= make_shared<Dielectric>(1.50f);
+	auto matBubble	= make_shared<Dielectric>(1.0f / 1.50f);
 	auto matRight	= make_shared<Metal>(XMFLOAT3(0.8f, 0.6f, 0.2f), 1.0f);
 
 	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	-100.5f,	1.0f),	100.0f,	matGround));
 	world.Add(make_shared<Sphere>(XMFLOAT3( 0.0f,	 0.0f,		1.2f),	0.5f,	matCenter));
 	world.Add(make_shared<Sphere>(XMFLOAT3(-1.0f,	 0.0f,		1.0f),	0.5f,	matLeft));
+	world.Add(make_shared<Sphere>(XMFLOAT3(-1.0f,	 0.0f,		1.0f),	0.4f,	matBubble));
 	world.Add(make_shared<Sphere>(XMFLOAT3( 1.0f,	 0.0f,		1.0f),	0.5f,	matRight));
 }
 

@@ -39,3 +39,20 @@ private:
 	float fuzz;
 };
 
+class Dielectric : public Material {
+public:
+	Dielectric(float _refractionIndex) : refractionIndex(_refractionIndex) {}
+
+	bool Scatter(
+		const Ray& _rayIn, const HitRecord& _record, DirectX::XMVECTOR& _attenuation, Ray& _scattered
+	) const override;
+
+private:
+	// Refractive index in air or a vacuum; ratio of material's refractive index
+	// over the enclosing media's refractive index
+	float refractionIndex;
+
+	static float Reflectance(float _cosine, float _refractionIndex);
+};
+
+

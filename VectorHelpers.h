@@ -1,6 +1,8 @@
 #pragma once
 #include "Helpers.h"
 
+static const DirectX::XMFLOAT3 UNIT_VECTOR3(1.0f, 1.0f, 1.0f);
+
 // Returns a random Vector3
 inline DirectX::XMVECTOR RandomVector() {
 	DirectX::XMFLOAT3 result(RandomFloat(), RandomFloat(), RandomFloat());
