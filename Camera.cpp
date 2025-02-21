@@ -232,26 +232,45 @@ void Camera::UpdateViewportData()
 	);
 }
 
-Ray Camera::GetRay(unsigned int _i, unsigned int _j)
+Ray Camera::GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDeltaU, DirectX::XMVECTOR _pixelDeltaV, DirectX::XMVECTOR _cameraPosition) const
 {
-	return Ray();
+	Ray result;
+
+	XMFLOAT2 offset = SampleSquare();
+	XMVECTOR vecPixelSample =
+		XMLoadFloat3(&upperLeftPixelCenter) +								// Start at center
+		XMVectorScale(XMLoadFloat3(&pixelDeltaU), offset.x + (float)_i) +	// Offset by X
+		XMVectorScale(XMLoadFloat3(&pixelDeltaV), offset.y + (float)_j);	// Offset by Y
+
+	// Find center of this pixel
+	XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
+		XMVectorScale(_pixelDeltaU, (float)_i) +
+		XMVectorScale(_pixelDeltaV, (float)_j);
+
+	// Get the direction of the ray through the center of this pixel
+	XMVECTOR vecRayDirection = pixelCenter - _cameraPosition;
+	XMStoreFloat3(&result.Direction, vecRayDirection);
+
+	result.Origin = transform->GetPosition();
+
+	return result;
 }
 
-DirectX::XMFLOAT4 Camera::RayColor(const Ray& _ray, const Hittable& _world)
+DirectX::XMFLOAT2 Camera::SampleSquare() const
 {
-	XMFLOAT4 outColor;
+	return XMFLOAT2(RandomFloat() - 0.5f, RandomFloat() - 0.5f);
+}
 
+DirectX::XMVECTOR Camera::RayColor(const Ray& _ray, const Hittable& _world)
+{
 	// Test for world collision
 	HitRecord record;
 
 	if (_world.Hit(_ray, Interval(0, infinity), record)) {
 		// Calculate color
-		XMFLOAT3 color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-		XMStoreFloat3(&color,
-			XMVectorScale(XMLoadFloat3(&record.normal) + XMLoadFloat3(&color), 0.5f)
-		);
+		XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 2.0f); // Alpha is set to 2 so it'll be scaled to 1
 
-		return XMFLOAT4(color.x, color.y, color.z, 1.0f);
+		return XMVectorScale(XMLoadFloat3(&record.normal) + XMLoadFloat4(&color), 0.5f);
 	}
 
 	// Sky color
@@ -273,9 +292,7 @@ DirectX::XMFLOAT4 Camera::RayColor(const Ray& _ray, const Hittable& _world)
 	XMFLOAT4 color2(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Calculate interpolated color
-	XMStoreFloat4(&outColor, XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a));
-
-	return outColor;
+	return XMVectorLerp(XMLoadFloat4(&color1), XMLoadFloat4(&color2), a);
 }
 
 
@@ -421,29 +438,19 @@ void FPSCamera::Render(const Hittable& _world, std::shared_ptr<CPUTexture> _cpuT
 		for (unsigned int x = 0; x < w; x++)
 		{
 			XMFLOAT4 pixelColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+			XMVECTOR vecPixelColor = XMLoadFloat4(&pixelColor);
 
 			for (int sample = 0; sample < samplesPerPixel; sample++) {
 				// Create ray
-				Ray ray = GetRay(x, y);
+				Ray ray = GetRay(x, y, vecPixelDeltaU, vecPixelDeltaV, vecCameraPosition);
 
-				// Find center of this pixel
-				XMVECTOR pixelCenter = XMLoadFloat3(&upperLeftPixelCenter) +
-					XMVectorScale(vecPixelDeltaU, (float)x) +
-					XMVectorScale(vecPixelDeltaV, (float)y);
-
-				// Get the direction of the ray through the center of this pixel
-				XMVECTOR vecRayDirection = pixelCenter - vecCameraPosition;
-				XMStoreFloat3(&ray.Direction, vecRayDirection);
-
-				//XMFLOAT4 color = XMFLOAT4(x / fWidth, y / fHeight, fSinTime, 1);
-				XMFLOAT4 color = RayColor(ray, _world);
-
-				XMStoreFloat4(&pixelColor,
-					XMLoadFloat4(&color) + XMLoadFloat4(&pixelColor)
-				);
-
-				_cpuTexture->SetColor(x, y, color);
+				// Accumulate color
+				vecPixelColor = vecPixelColor + RayColor(ray, _world);
 			}
+
+			// Average, store, and set final pixel color
+			XMStoreFloat4(&pixelColor, XMVectorScale(vecPixelColor, pixelSamplesScale));
+			_cpuTexture->SetColor(x, y, pixelColor);
 		}
 		y++;
 	}

@@ -137,9 +137,11 @@ protected:
 
 	// Construct camera ray originating from origin and directed at randomly
 	// sampled point around pixel location _i, _j.
-	Ray GetRay(unsigned int _i, unsigned int _j);
+	Ray GetRay(unsigned int _i, unsigned int _j, DirectX::XMVECTOR _pixelDeltaU, DirectX::XMVECTOR _pixelDeltaV, DirectX::XMVECTOR _cameraPosition) const;
+	// Returns a 2D vector to a random point in X: [-0.5, +0.5], Y: [-0.5, +0.5] unit square
+	DirectX::XMFLOAT2 SampleSquare() const;
 	// Find the color returned by a given ray
-	DirectX::XMFLOAT4 RayColor(const Ray& _ray, const Hittable& _world);
+	DirectX::XMVECTOR RayColor(const Ray& _ray, const Hittable& _world);
 };
 
 
