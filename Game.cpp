@@ -39,10 +39,10 @@ void Game::Initialize()
 
 	// Create the camera
 	camera = std::make_shared<FPSCamera>(
-		XMFLOAT3(0.0f, 0.0f, 0.0f),	// Position
+		XMFLOAT3(-2.0f, 2.0f, -1.0f),	// Position
 		1.0f,						// Move speed
 		0.002f,						// Look speed
-		XM_PIDIV4,					// Field of view
+		20.0f,						// Field of view
 		Window::AspectRatio(),		// Aspect ratio
 		1.0f,						// Near clip
 		100.0f,						// Far clip

@@ -193,7 +193,12 @@ void Camera::Initialize()
 
 void Camera::UpdateViewportData()
 {
-	viewportSize = XMFLOAT2(2.0f * Window::AspectRatio(), 2.0f);
+	// Determine viewport dimensions
+	auto theta = DegreesToRadians(fieldOfView);
+	auto h = std::tan(theta / 2.0f);
+	auto viewportHeight = 2 * h * nearClip;
+
+	viewportSize = XMFLOAT2(viewportHeight * Window::AspectRatio(), viewportHeight);
 	viewportPixelPercentage = XMFLOAT2(
 		(1.0f / (Window::Width() * textureScale)),
 		(1.0f / (Window::Height() * textureScale))
